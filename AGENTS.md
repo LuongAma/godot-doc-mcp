@@ -16,11 +16,15 @@ Build a local Model Context Protocol (MCP) server that serves Godot Engine API d
 
 ## Planned Layout
 - `server/` — MCP server implementation (TypeScript).
-- `server/src/index.ts` — entrypoint (stdio MCP server).
-- `server/src/indexer/` — XML parser + index builder.
+- `server/src/index.ts` — entrypoint and bootstrap.
+- `server/src/cli.ts` — CLI runner (stdio by default).
+- `server/src/mcp/` — stdio MCP server wiring (tools, resources, prompts).
+- `server/src/parser/` — XML parser for Godot docs.
+- `server/src/indexer/` — search index builder + persistence store.
 - `server/src/adapters/` — mapping from parsed docs to MCP tools/resources.
-- `server/src/search/` — lightweight in‑memory search index.
-- `server/test/` — unit tests for parser and tools.
+- `server/src/search/` — lightweight in‑memory search engine.
+- `server/src/resolver/` — class/symbol resolution helpers.
+- `server/test/` — unit tests for parser, index, resolver, tools, server.
 - `.cache/godot-index.json` — generated index (ignored in VCS).
 
 If a Python implementation is later desired, place it in `server-py/` mirroring the structure.
@@ -55,6 +59,17 @@ Resources:
 
 Prompts (optional helpers exposed via MCP):
 - `how_to_use_godot_docs` — Short instruction prompt that teaches the model to call `godot_search` first, then `godot_get_*` for details.
+
+## Current Status (Sep 21, 2025)
+- Stdio MCP server running with tools/resources/prompts implemented.
+- XML parsing, symbol resolution, search index, and persistence utilities in place.
+- Env handling and minimal logger wired.
+- Tests and fixtures cover parser, indexer, search, resolver, tools, server, and security guards.
+- Example scripts and run instructions validated locally.
+
+Known follow‑ups (not blockers):
+- Optional file watcher to rebuild index on doc changes.
+- Optional warm‑start on boot using `.cache/godot-index.json` automatically if present.
 
 ## Type Shapes (TypeScript)
 These interfaces are for internal use and tool return values.
@@ -175,16 +190,9 @@ pnpm dev
 3. If you add a new MCP tool or change a return shape, update this AGENTS.md and the README.
 
 ## Implementation Checklist (first pass)
-- [ ] Scaffold `server/` (tsconfig, package.json, src/).
-- [ ] Implement XML → `GodotClassDoc` parser.
-- [ ] Build search index + persistence.
-- [ ] Expose MCP tools/resources via stdio.
-- [ ] Wire env vars; add logging.
-- [ ] Add tests + fixtures; document examples.
-
-## Active Specifications
-- godot-docs-mcp-server — Initialized Kiro spec for a local MCP server that serves Godot Engine API documentation with offline search and precise symbol retrieval over stdio.
-
----
-
-Questions or design changes? Open an issue or propose updates to this file first.
+- [x] Scaffold `server/` (tsconfig, package.json, src/).
+- [x] Implement XML → `GodotClassDoc` parser.
+- [x] Build search index + persistence.
+- [x] Expose MCP tools/resources via stdio.
+- [x] Wire env vars; add logging.
+- [x] Add tests + fixtures; document examples.
