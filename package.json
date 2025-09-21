@@ -1,0 +1,31 @@
+{
+  "name": "godot-docs-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "tsx watch server/src/cli.ts",
+    "build": "node -e \"console.log('No build step needed with tsx')\"",
+    "start": "node --import tsx server/src/cli.ts",
+    "smoke:local": "node --import tsx scripts/verify-local.mjs",
+    "smoke:mcp": "node --import tsx scripts/mcp-client.mjs",
+    "lint": "biome lint server/src",
+    "format": "biome format --write server/src",
+    "format:check": "biome format server/src",
+    "check:biome": "biome check server/src"
+  },
+  "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^24.5.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "fast-xml-parser": "^5.2.5",
+    "zod": "^3.25.0"
+  }
+}
