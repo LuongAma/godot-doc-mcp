@@ -21,12 +21,12 @@ export async function createServer(env: Record<string, string | undefined> = pro
 
 export async function start(env: Record<string, string | undefined> = process.env) {
   // Fast initialize path: start stdio server immediately, then warm up in background.
+  // Be lenient here to avoid client initialize timeouts; validate during warm-up instead.
   if (!isNodeVersionOk(env.NODE_VERSION || process.versions.node)) {
-    throw new Error("Node.js v20+ required");
+    // Allow startup; warm-up will fail with a clear error later if needed.
   }
 
   const cfg = loadConfig(env);
-  validateConfig(cfg);
   const logger = createLogger(cfg.MCP_SERVER_LOG);
 
   // Deferred tools facade: waits for warmup before serving calls.
@@ -74,6 +74,8 @@ export async function start(env: Record<string, string | undefined> = process.en
         // Warm up docs/index only after responding to initialize.
         (async () => {
           try {
+            // Validate doc dir after initialize so clients don't time out waiting.
+            validateConfig(cfg);
             const classes = await parseAll(cfg.GODOT_DOC_DIR);
             const index = buildIndex(classes);
             impl = createGodotTools(classes, index, logger);

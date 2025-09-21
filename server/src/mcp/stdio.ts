@@ -30,13 +30,7 @@ export async function startMcpStdioServer(
   try {
     console.error(`[MCP] starting ${SERVER_NAME}@${SERVER_VERSION} on stdio`);
   } catch {}
-  try {
-    process.stdin.on("data", (c) => {
-      try {
-        console.error(`[MCP] stdin bytes ${c.length}`);
-      } catch {}
-    });
-  } catch {}
+  // Avoid verbose stdin byte logging that can confuse clients
   const mcp = new McpServer(
     { name: SERVER_NAME, version: SERVER_VERSION },
     {
