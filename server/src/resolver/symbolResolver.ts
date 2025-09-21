@@ -1,4 +1,4 @@
-import type { GodotClassDoc, GodotSymbolDoc } from "../types.js";
+import type { GodotClassDoc, GodotSymbolDoc, AncestryResponse } from "../types.js";
 
 function normalizeSections(c: GodotClassDoc): GodotClassDoc {
   return {
@@ -25,6 +25,40 @@ export function createSymbolResolver(classes: GodotClassDoc[]) {
   }
 
   return {
+    getClassChain(name: string, maxDepth?: number): AncestryResponse {
+      const start = byName.get(name);
+      const warnings: string[] = [];
+      if (!start) {
+        const suggestions = didYouMean(name);
+        const err = new Error(`Class not found: ${name}`) as Error & {
+          code?: string;
+          suggestions?: string[];
+        };
+        err.code = "NOT_FOUND";
+        err.suggestions = suggestions;
+        throw err;
+      }
+      const chain: string[] = [];
+      const docs: GodotClassDoc[] = [];
+      let depth = 0;
+      let cur: GodotClassDoc | undefined = start;
+      while (cur) {
+        chain.push(cur.name);
+        docs.push(cur);
+        depth++;
+        if (typeof maxDepth === "number" && maxDepth > 0 && depth > maxDepth) break;
+        const parentName = cur.inherits;
+        if (!parentName) break;
+        const parent = byName.get(parentName);
+        if (!parent) {
+          chain.push(parentName);
+          warnings.push(`Missing parent doc for '${parentName}'`);
+          break;
+        }
+        cur = parent;
+      }
+      return warnings.length ? { inheritanceChain: chain, classes: docs, warnings } : { inheritanceChain: chain, classes: docs };
+    },
     getClass(name: string): GodotClassDoc {
       const c = byName.get(name);
       if (!c) {

@@ -45,13 +45,23 @@ async function main() {
     const listPayload = JSON.parse(listRes.content?.[0]?.text ?? '[]');
     console.log('Classes starting with "Vec":', listPayload);
 
-    // Fetch a class via tool
+    // Fetch a class via tool (single doc)
     const classRes = await client.callTool({
       name: 'godot_get_class',
       arguments: { name: 'Vector2' },
     });
     const classDoc = JSON.parse(classRes.content?.[0]?.text ?? '{}');
     console.log('Vector2 methods:', classDoc.methods?.length, 'properties:', classDoc.properties?.length);
+
+    // Fetch a class with ancestors
+    const classAncRes = await client.callTool({
+      name: 'godot_get_class',
+      arguments: { name: 'Button', includeAncestors: true, maxDepth: 0 },
+    });
+    const classAnc = JSON.parse(classAncRes.content?.[0]?.text ?? '{}');
+    if (Array.isArray(classAnc.inheritanceChain)) {
+      console.log('Button chain length:', classAnc.inheritanceChain.length);
+    }
 
     // Fetch a symbol via tool
     const symRes = await client.callTool({
@@ -65,6 +75,11 @@ async function main() {
     const classResource = await client.readResource({ uri: 'godot://class/Node' });
     const nodeDoc = JSON.parse(classResource.contents?.[0]?.text ?? '{}');
     console.log('Node brief:', (nodeDoc.brief || '').slice(0, 80));
+
+    // Read a class with ancestors via resource query
+    const classResourceAnc = await client.readResource({ uri: 'godot://class/Button?ancestors=1&maxDepth=0' });
+    const buttonAnc = JSON.parse(classResourceAnc.contents?.[0]?.text ?? '{}');
+    console.log('Button chain (resource):', Array.isArray(buttonAnc.inheritanceChain) ? buttonAnc.inheritanceChain.length : 'n/a');
 
     // Search via resource URI
     const searchResource = await client.readResource({ uri: 'godot://search?q=pressed&kind=signal&limit=3' });

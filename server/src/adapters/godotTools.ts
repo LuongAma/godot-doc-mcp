@@ -1,6 +1,6 @@
 import { createSymbolResolver } from "../resolver/symbolResolver.js";
 import { createSearchEngine } from "../search/searchEngine.js";
-import type { GodotClassDoc, GodotSymbolDoc, MemoryIndex } from "../types.js";
+import type { AncestryResponse, GodotClassDoc, GodotSymbolDoc, MemoryIndex } from "../types.js";
 
 export interface GodotTools {
   search(input: {
@@ -8,7 +8,7 @@ export interface GodotTools {
     kind?: "class" | "method" | "property" | "signal" | "constant";
     limit?: number;
   }): Promise<Array<{ uri: string; name: string; kind: string; score: number; snippet?: string }>>;
-  getClass(input: { name: string }): Promise<GodotClassDoc>;
+  getClass(input: { name: string; includeAncestors?: boolean; maxDepth?: number }): Promise<GodotClassDoc | AncestryResponse>;
   getSymbol(input: { qname: string }): Promise<GodotSymbolDoc>;
   listClasses(input: { prefix?: string; limit?: number }): Promise<string[]>;
 }
@@ -34,7 +34,14 @@ export function createGodotTools(
         err.code = "INVALID_ARGUMENT";
         throw err;
       }
-      return resolver.getClass(input.name);
+      const name = input.name;
+      const includeAncestors = Boolean(input.includeAncestors);
+      const maxDepth = typeof input.maxDepth === "number" ? input.maxDepth : undefined;
+      if (includeAncestors) {
+        logger?.debug?.("getClass(includeAncestors)", { name, maxDepth });
+        return resolver.getClassChain(name, maxDepth && maxDepth > 0 ? maxDepth : undefined);
+      }
+      return resolver.getClass(name);
     },
     async getSymbol(input) {
       if (!input || !input.qname) {

@@ -41,9 +41,9 @@ Tools (names are stable API):
 - `godot_search` — Full‑text search.
   - params: `{ query: string, kind?: "class"|"method"|"property"|"signal"|"constant", limit?: number }`
   - returns: `Array<{ uri: string, name: string, kind: string, score: number, snippet?: string }>`
-- `godot_get_class` — Return one class.
-  - params: `{ name: string }`
-  - returns: `GodotClassDoc`
+- `godot_get_class` — Return one class (optionally include ancestors).
+  - params: `{ name: string, includeAncestors?: boolean, maxDepth?: number }`
+  - returns: `GodotClassDoc | { inheritanceChain: string[], classes: GodotClassDoc[], warnings?: string[] }`
 - `godot_get_symbol` — Return a member/method/signal/constant by qualified name.
   - params: `{ qname: string } // e.g. "Node._ready", "Vector2.x", "Button.pressed"`
   - returns: `GodotSymbolDoc`
@@ -53,7 +53,7 @@ Tools (names are stable API):
 
 Resources:
 - URIs use a stable scheme the client can open:
-  - `godot://class/<ClassName>`
+  - `godot://class/<ClassName>{?ancestors,maxDepth}`
   - `godot://symbol/<ClassName>/<kind>/<name>`
   - `godot://search?q=<q>&kind=<kind>`
 

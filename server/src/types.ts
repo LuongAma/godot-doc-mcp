@@ -56,6 +56,12 @@ export type GodotSymbolDoc =
   | ({ kind: "signal"; className: string } & GodotSignal)
   | ({ kind: "constant"; className: string } & GodotConstant);
 
+export interface AncestryResponse {
+  inheritanceChain: string[];
+  classes: GodotClassDoc[];
+  warnings?: string[];
+}
+
 export interface Posting {
   docId: number;
   tf: number;

@@ -65,11 +65,19 @@ export async function startMcpStdioServer(
 
   mcp.tool(
     "godot_get_class",
-    "Return one class by name.",
-    { name: z.string() },
+    "Return one class by name (optionally include ancestors).",
+    {
+      name: z.string(),
+      includeAncestors: z.boolean().optional(),
+      maxDepth: z.number().int().min(0).optional(),
+    },
     async (args, _extra) => {
-      const { name } = args as { name: string };
-      const result = await tools.getClass({ name });
+      const { name, includeAncestors, maxDepth } = args as {
+        name: string;
+        includeAncestors?: boolean;
+        maxDepth?: number;
+      };
+      const result = await tools.getClass({ name, includeAncestors, maxDepth });
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     },
   );
@@ -122,7 +130,7 @@ export async function startMcpStdioServer(
   });
 
   // Resources
-  const classTemplate = new ResourceTemplate("godot://class/{name}", {
+  const classTemplate = new ResourceTemplate("godot://class/{name}{?ancestors,maxDepth}", {
     list: async () => {
       const names = await tools.listClasses({});
       return {
@@ -142,12 +150,16 @@ export async function startMcpStdioServer(
     },
   });
 
-  mcp.resource("godot-class", classTemplate, async (_uri, vars) => {
+  mcp.resource("godot-class", classTemplate, async (uriObj, vars) => {
     const name = String(vars.name || "");
-    const uri = `godot://class/${name}`;
-    const json = await tools.getClass({ name });
+    const u = new URL(uriObj.toString());
+    const ancestorsParam = u.searchParams.get("ancestors");
+    const maxDepthParam = u.searchParams.get("maxDepth");
+    const includeAncestors = ancestorsParam === "1" || ancestorsParam === "true";
+    const maxDepth = maxDepthParam ? Number(maxDepthParam) : undefined;
+    const json = await tools.getClass({ name, includeAncestors, maxDepth });
     return {
-      contents: [{ uri, mimeType: "application/json", text: JSON.stringify(json, null, 2) }],
+      contents: [{ uri: uriObj.toString(), mimeType: "application/json", text: JSON.stringify(json, null, 2) }],
     };
   });
 
