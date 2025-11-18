@@ -17,6 +17,14 @@ Prereqs:
 
 Docs source:
 - Place Godot XML docs under `./doc/classes/*.xml` (this repo already includes a representative set for local testing). Point `GODOT_DOC_DIR` elsewhere if you keep docs outside the repo.
+- Need fresh docs from an existing Godot checkout? Run the editor binary with `--doctool` pointing at your target `doc/classes` folder (add `--headless` for CI/servers). If you don't already have the CLI binary on your `PATH`, follow the [official command line instructions](https://docs.godotengine.org/en/latest/tutorials/editor/command_line_tutorial.html) to install or alias it (package install, manual build, or exporting the editor).
+
+  ```bash
+  # inside the upstream Godot repo after building the editor, or anywhere godot is on PATH
+  godot --doctool ./doc/classes --headless
+  ```
+
+  The command exports the full XML set (classes, signals, etc.). Repeat whenever you update your Godot source to keep docs in sync.
 
 Run (stdio):
 
@@ -317,4 +325,3 @@ Adding or changing MCP tools:
 ## Credits
 
 Godot Engine and documentation are trademarks of their respective owners. This project is not affiliated with or endorsed by the Godot project.
-
